@@ -3,19 +3,27 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Reflexo - Mentor de Vida AI</title>
     <meta name="description" content="Um aplicativo de reflexão profunda e conselhos de vida personalizados usando inteligência artificial.">
     
     <!-- PWA / Mobile / WebIntoApp Support -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
+    
+    <!-- iOS / Safari app capability -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Reflexo">
-    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3305/3305673.png">
+    <link rel="mask-icon" href="https://cdn-icons-png.flaticon.com/512/3305/3305673.png" color="#4f46e5">
 
-    <!-- Open Graph / Facebook -->
+    <!-- Android / Chrome app capability -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Reflexo">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://cdn-icons-png.flaticon.com/512/3305/3305673.png">
+
+    <!-- Social / Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Reflexo - Mentor de Vida AI">
     <meta property="og:description" content="Sintonize com sua sabedoria interior através de reflexões geradas por IA.">
@@ -25,26 +33,67 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top, 0px);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background: #f8fafc;
-            /* Prevent bouncing on iOS mobile app wrappers */
             overscroll-behavior-y: contain;
             user-select: none;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
         }
+
         .font-serif {
             font-family: 'Playfair Display', serif;
         }
+
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+
         .gradient-bg {
             background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
         }
-        /* Custom scrollbar for better look */
+
+        /* Touch improvements for converted apps */
+        button, a, [role="button"] {
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+
+        /* Prevent content jump on mobile keyboard */
+        #root {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Padding adjustments for notched phones */
+        header {
+            padding-top: calc(1.5rem + var(--safe-area-inset-top)) !important;
+        }
+        
+        nav {
+            padding-bottom: calc(1rem + var(--safe-area-inset-bottom)) !important;
+        }
+
+        /* Custom scrollbar for PWA context */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -55,25 +104,19 @@
             background: #e2e8f0;
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #cbd5e1;
-        }
-        /* Touch improvements for mobile apps */
-        button, a {
-            touch-action: manipulation;
-        }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4"
-  }
-}
-</script>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+        "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+        "react/": "https://esm.sh/react@^19.2.4/",
+        "react": "https://esm.sh/react@^19.2.4"
+      }
+    }
+    </script>
 </head>
 <body class="gradient-bg min-h-screen">
     <div id="root"></div>

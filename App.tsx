@@ -5,7 +5,7 @@ import {
   Sparkles, History, PlusCircle, ChevronRight, ArrowLeft, 
   Share2, Trash2, Download, BookOpen, Shuffle, Plus, Settings,
   Camera, Coffee, Moon, Sun, Book, Shield, Zap, Image as ImageIcon,
-  User, MessageCircle, Star, Music, Target, Palette
+  User, MessageCircle, Star, Music, Target, Palette, Twitter, Mail, Copy
 } from 'lucide-react';
 import { Category, ReflectionResponse, HistoryItem, CustomCategory } from './types';
 import { generateReflection, generateRandomReflection } from './services/geminiService';
@@ -124,7 +124,8 @@ const App: React.FC = () => {
     try {
       const res = await generateRandomReflection();
       setResult(res);
-      saveToHistory(res, "Aleatório", "Conselho rápido do dia");
+      const id = saveToHistory(res, "Aleatório", "Conselho rápido do dia");
+      setActiveHistoryItem({ ...res, id, category: "Aleatório", context: "Conselho rápido do dia", timestamp: Date.now() });
     } catch (e) {
       console.error(e);
       alert("Erro ao buscar conselho.");
@@ -167,6 +168,50 @@ const App: React.FC = () => {
     }
     const IconComponent = (ICON_LIBRARY as any)[icon] || Sparkles;
     return <IconComponent className={className} />;
+  };
+
+  // --- Compartilhamento ---
+  const getShareText = () => {
+    if (!result) return '';
+    return `🧘‍♂️ *Reflexo do Dia*\n\n"${result.reflection}"\n\n💡 *Conselho:* ${result.advice}\n\n✨ *Afirmação:* ${result.affirmation}\n\n📜 "${result.quote?.text}" — ${result.quote?.author}`;
+  };
+
+  const handleNativeShare = async () => {
+    const text = getShareText();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Reflexo - Mentor de Vida AI',
+          text: text,
+        });
+      } catch (err) {
+        console.error('Erro ao compartilhar:', err);
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
+
+  const handleWhatsAppShare = () => {
+    const text = encodeURIComponent(getShareText());
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const handleTwitterShare = () => {
+    const text = encodeURIComponent(`"${result?.reflection}"\n\n#ReflexoAI #MentalHealth`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent('Uma reflexão para você');
+    const body = encodeURIComponent(getShareText());
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+  };
+
+  const handleCopyLink = () => {
+    const text = getShareText();
+    navigator.clipboard.writeText(text);
+    alert("Copiado para a área de transferência!");
   };
 
   // --- Tematização ---
@@ -273,7 +318,6 @@ const App: React.FC = () => {
               <ArrowLeft size={18} /> Voltar
             </button>
 
-            {/* Seção de Temas */}
             <div className={`p-6 rounded-[2rem] border ${themeClasses.card} shadow-sm mb-6`}>
               <h3 className={`text-sm font-bold ${themeClasses.textMuted} uppercase tracking-widest mb-4 flex items-center gap-2`}>
                 <Palette size={16} /> Tema Visual
@@ -307,7 +351,7 @@ const App: React.FC = () => {
                   type="text" 
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  placeholder="Nome da categoria..."
+                  placeholder="Ex: Paternidade, Amizade..."
                   className={`flex-1 p-4 rounded-2xl border-none ring-1 ${themeClasses.input} focus:ring-2 focus:ring-indigo-300 transition-all`}
                 />
               </div>
@@ -327,24 +371,11 @@ const App: React.FC = () => {
                   <button 
                     onClick={() => fileInputRef.current?.click()}
                     className={`p-2 rounded-xl flex items-center justify-center border-2 border-dashed ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'} text-slate-400 hover:bg-slate-500/5 transition-all ${newCatIcon.startsWith('data:image') ? 'border-indigo-600 bg-indigo-50/10' : ''}`}
-                    title="Upload de imagem"
                   >
                     <ImageIcon size={20} />
                   </button>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*" 
-                    onChange={handleFileUpload}
-                  />
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
                 </div>
-                {newCatIcon.startsWith('data:image') && (
-                  <div className="mt-3 flex items-center gap-2 p-2 bg-indigo-50/20 rounded-xl animate-in fade-in zoom-in-95">
-                    <img src={newCatIcon} className="size-8 rounded-md object-cover" alt="Preview" />
-                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight">Personalizado</span>
-                  </div>
-                )}
               </div>
 
               <button 
@@ -371,7 +402,6 @@ const App: React.FC = () => {
                   </button>
                 </div>
               ))}
-              {customCategories.length === 0 && <p className={`text-center ${themeClasses.textMuted} py-10 italic`}>Nenhuma categoria personalizada.</p>}
             </div>
           </div>
         )}
@@ -387,7 +417,7 @@ const App: React.FC = () => {
             <textarea
               value={context}
               onChange={(e) => setContext(e.target.value)}
-              placeholder="O que está em seu coração? Desabafe para sintonizar a sabedoria."
+              placeholder="Descreva o que está acontecendo ou como se sente..."
               className={`w-full h-48 p-5 glass rounded-3xl border-none focus:ring-2 focus:ring-indigo-300 resize-none leading-relaxed shadow-inner transition-all ${themeClasses.input}`}
             ></textarea>
             <button
@@ -405,12 +435,12 @@ const App: React.FC = () => {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-6 shadow-sm"></div>
-                <h3 className={`text-xl font-serif font-bold ${themeClasses.text}`}>Sintonizando...</h3>
+                <h3 className={`text-xl font-serif font-bold ${themeClasses.text}`}>Sintonizando com a sabedoria...</h3>
               </div>
             ) : result && (
               <div className="space-y-6">
                 <div className={`rounded-[2.2rem] p-8 shadow-sm border ${themeClasses.card} transition-colors`}>
-                  <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-4">Reflexão para você</h4>
+                  <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-4">Sua Reflexão</h4>
                   <p className={`italic text-lg font-serif mb-6 leading-relaxed ${themeClasses.text}`}>"{result.reflection}"</p>
                   <p className={`p-4 rounded-2xl mb-6 text-sm leading-relaxed border ${theme === 'dark' ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-slate-50/50 text-slate-600 border-slate-100'}`}>{result.advice}</p>
                   <p className="text-indigo-500 font-bold mb-6 text-center text-sm bg-indigo-500/10 py-2 rounded-xl">✨ {result.affirmation}</p>
@@ -418,6 +448,34 @@ const App: React.FC = () => {
                     <p className={`text-xs ${themeClasses.textMuted} italic`}>"{result.quote?.text}"</p>
                     <p className={`text-[10px] font-bold mt-1 uppercase tracking-tighter ${themeClasses.textMuted}`}>— {result.quote?.author}</p>
                   </div>
+                </div>
+
+                {/* Seção de Compartilhamento */}
+                <div className={`p-5 rounded-[2rem] border ${themeClasses.card} shadow-sm`}>
+                  <h4 className={`text-[10px] font-bold ${themeClasses.textMuted} uppercase tracking-widest mb-4 flex items-center gap-2`}>
+                    <Share2 size={14} /> Compartilhar Insight
+                  </h4>
+                  <div className="grid grid-cols-4 gap-2">
+                    <button onClick={handleWhatsAppShare} className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-green-500/10 transition-colors group">
+                      <div className="p-2.5 bg-green-500 text-white rounded-xl shadow-md group-active:scale-90 transition-transform"><MessageCircle size={18}/></div>
+                      <span className="text-[9px] font-bold opacity-60">WhatsApp</span>
+                    </button>
+                    <button onClick={handleTwitterShare} className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-sky-500/10 transition-colors group">
+                      <div className="p-2.5 bg-sky-500 text-white rounded-xl shadow-md group-active:scale-90 transition-transform"><Twitter size={18}/></div>
+                      <span className="text-[9px] font-bold opacity-60">Twitter</span>
+                    </button>
+                    <button onClick={handleEmailShare} className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-500/10 transition-colors group">
+                      <div className="p-2.5 bg-slate-500 text-white rounded-xl shadow-md group-active:scale-90 transition-transform"><Mail size={18}/></div>
+                      <span className="text-[9px] font-bold opacity-60">E-mail</span>
+                    </button>
+                    <button onClick={handleCopyLink} className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-indigo-500/10 transition-colors group">
+                      <div className="p-2.5 bg-indigo-500 text-white rounded-xl shadow-md group-active:scale-90 transition-transform"><Copy size={18}/></div>
+                      <span className="text-[9px] font-bold opacity-60">Copiar</span>
+                    </button>
+                  </div>
+                  <button onClick={handleNativeShare} className={`w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed ${themeClasses.textMuted} text-[10px] font-bold uppercase tracking-wider`}>
+                    <Share2 size={12}/> Outros Apps
+                  </button>
                 </div>
 
                 <div className={`p-6 rounded-[2rem] border shadow-inner ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-indigo-50/50 border-indigo-100'}`}>
@@ -428,23 +486,13 @@ const App: React.FC = () => {
                       setJournalNote(e.target.value);
                       if (activeHistoryItem) updateJournalForHistoryItem(activeHistoryItem.id, e.target.value);
                     }}
-                    placeholder="Escreva seus sentimentos aqui..."
+                    placeholder="Como você se sente após essa reflexão? Escreva aqui..."
                     className={`w-full h-32 p-4 bg-transparent border-none text-sm focus:ring-1 focus:ring-indigo-300 resize-none transition-all ${themeClasses.text}`}
                   ></textarea>
                 </div>
 
                 <div className="flex gap-4">
-                  <button onClick={resetFlow} className={`flex-1 py-4 rounded-2xl font-bold shadow-sm border transition-all ${themeClasses.card} ${themeClasses.text}`}>Novo Início</button>
-                  <button 
-                    onClick={() => {
-                      const text = `Reflexão: ${result.reflection}\nConselho: ${result.advice}`;
-                      navigator.clipboard.writeText(text);
-                      alert("Reflexão copiada!");
-                    }}
-                    className="p-4 bg-indigo-600 text-white rounded-2xl shadow-lg active:scale-95 transition-all"
-                  >
-                    <Share2 size={24}/>
-                  </button>
+                  <button onClick={resetFlow} className={`flex-1 py-4 rounded-2xl font-bold shadow-sm border transition-all ${themeClasses.card} ${themeClasses.text}`}>Novo Ciclo</button>
                 </div>
               </div>
             )}
@@ -462,15 +510,9 @@ const App: React.FC = () => {
                     <span className={`text-[10px] ${themeClasses.textMuted} font-medium`}>{new Date(item.timestamp).toLocaleDateString()}</span>
                   </div>
                   <p className={`text-xs line-clamp-2 italic font-serif ${themeClasses.text}`}>"{item.reflection}"</p>
-                  {item.journalEntry && <div className="mt-2 flex items-center gap-1 text-[10px] text-indigo-400 font-bold"><BookOpen size={10}/> Com anotação</div>}
                 </div>
               ))}
-              {history.length === 0 && (
-                <div className="text-center py-20 animate-pulse">
-                  <History className={`mx-auto mb-4 opacity-20 ${themeClasses.text}`} size={48} />
-                  <p className={themeClasses.textMuted}>Seu rastro de crescimento aparecerá aqui.</p>
-                </div>
-              )}
+              {history.length === 0 && <p className={`text-center py-20 ${themeClasses.textMuted} italic`}>Sua jornada começa com a primeira reflexão.</p>}
             </div>
           </div>
         )}
@@ -482,25 +524,13 @@ const App: React.FC = () => {
               {history.filter(h => h.journalEntry).map(item => (
                 <div key={item.id} className={`p-6 border shadow-sm rounded-[2rem] ${themeClasses.card}`}>
                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg"><BookOpen size={16}/></div>
-                        <span className={`text-xs ${themeClasses.textMuted} font-bold`}>{new Date(item.timestamp).toLocaleDateString()}</span>
-                      </div>
+                      <span className={`text-xs ${themeClasses.textMuted} font-bold`}>{new Date(item.timestamp).toLocaleDateString()}</span>
                       <span className="text-[10px] px-2 py-0.5 bg-slate-500/10 text-slate-500 rounded-full font-bold uppercase">{item.category}</span>
                    </div>
                    <p className={`text-sm italic mb-4 leading-relaxed font-serif ${themeClasses.text}`}>"{item.journalEntry}"</p>
-                   <div className="pt-4 border-t border-slate-500/10">
-                      <p className={`text-[10px] uppercase tracking-widest font-bold mb-1 ${themeClasses.textMuted}`}>Motivado por:</p>
-                      <p className={`text-[10px] line-clamp-1 italic ${themeClasses.textMuted}`}>"{item.reflection}"</p>
-                   </div>
                 </div>
               ))}
-              {history.filter(h => h.journalEntry).length === 0 && (
-                <div className="text-center py-20 italic">
-                  <BookOpen className={`mx-auto mb-4 opacity-10 ${themeClasses.text}`} size={48} />
-                  <p className={themeClasses.textMuted}>Suas memórias emocionais serão guardadas aqui.</p>
-                </div>
-              )}
+              {history.filter(h => h.journalEntry).length === 0 && <p className={`text-center py-20 ${themeClasses.textMuted} italic`}>Suas anotações aparecerão aqui.</p>}
             </div>
           </div>
         )}
@@ -508,30 +538,19 @@ const App: React.FC = () => {
 
       {/* Barra de Navegação Inferior */}
       <nav className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md backdrop-blur-md border-t px-8 py-4 flex justify-around items-center z-50 transition-colors ${themeClasses.nav}`}>
-        <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 transition-all ${view === 'home' ? 'text-indigo-500 scale-110' : 'text-slate-500 hover:text-slate-400'}`}>
+        <button onClick={() => setView('home')} className={`flex flex-col items-center gap-1 transition-all ${view === 'home' ? 'text-indigo-500 scale-110' : 'text-slate-500'}`}>
           <Compass size={24} />
           <span className="text-[9px] font-bold uppercase tracking-wider">Início</span>
         </button>
-        <button onClick={() => setView('journal')} className={`flex flex-col items-center gap-1 transition-all ${view === 'journal' ? 'text-indigo-500 scale-110' : 'text-slate-500 hover:text-slate-400'}`}>
+        <button onClick={() => setView('journal')} className={`flex flex-col items-center gap-1 transition-all ${view === 'journal' ? 'text-indigo-500 scale-110' : 'text-slate-500'}`}>
           <BookOpen size={24} />
           <span className="text-[9px] font-bold uppercase tracking-wider">Diário</span>
         </button>
-        <button onClick={() => setView('history')} className={`flex flex-col items-center gap-1 transition-all ${view === 'history' ? 'text-indigo-500 scale-110' : 'text-slate-500 hover:text-slate-400'}`}>
+        <button onClick={() => setView('history')} className={`flex flex-col items-center gap-1 transition-all ${view === 'history' ? 'text-indigo-500 scale-110' : 'text-slate-500'}`}>
           <History size={24} />
           <span className="text-[9px] font-bold uppercase tracking-wider">Passado</span>
         </button>
       </nav>
-
-      {/* Guia PWA */}
-      {view === 'home' && (
-        <div className={`mt-8 mb-4 mx-6 p-4 rounded-2xl flex items-center gap-3 border shadow-sm animate-in fade-in slide-in-from-bottom-2 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : theme === 'sepia' ? 'bg-[#e8dfc4]/50 border-[#d6ccb0]' : 'bg-indigo-50/50 border-indigo-100'}`}>
-          <div className="bg-indigo-600 text-white p-2 rounded-lg shadow-md"><Download size={16} /></div>
-          <div>
-            <h4 className={`text-xs font-bold leading-tight ${theme === 'dark' ? 'text-slate-100' : 'text-indigo-900'}`}>Instale no Android</h4>
-            <p className={`text-[9px] ${theme === 'dark' ? 'text-slate-400' : 'text-indigo-700'}`}>Menu do Chrome > "Instalar aplicativo".</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

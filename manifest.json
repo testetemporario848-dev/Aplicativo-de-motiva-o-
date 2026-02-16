@@ -2,8 +2,9 @@
 {
   "name": "Reflexo: Mentor de Vida AI",
   "short_name": "Reflexo",
-  "description": "Conselhos de vida profundos e personalizados com IA.",
-  "start_url": "./index.html",
+  "description": "Conselhos de vida profundos e personalizados com IA para ajudar na sua jornada diária.",
+  "start_url": "./",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#4f46e5",
@@ -11,9 +12,25 @@
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3305/3305673.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3305/3305673.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["lifestyle", "productivity", "health"],
+  "screenshots": [
+    {
+      "src": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=1000",
+      "sizes": "1000x1000",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Home Screen"
     }
   ]
 }
