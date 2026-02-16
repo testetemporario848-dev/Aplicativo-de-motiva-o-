@@ -1,0 +1,19 @@
+
+{
+  "name": "Reflexo: Mentor de Vida AI",
+  "short_name": "Reflexo",
+  "description": "Conselhos de vida profundos e personalizados com IA.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3305/3305673.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

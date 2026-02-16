@@ -3,20 +3,23 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reflexo - Mentor de Vida AI</title>
     <meta name="description" content="Um aplicativo de reflexão profunda e conselhos de vida personalizados usando inteligência artificial.">
     
+    <!-- PWA / Mobile / WebIntoApp Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Reflexo">
+    <meta name="mobile-web-app-capable" content="yes">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Reflexo - Mentor de Vida AI">
     <meta property="og:description" content="Sintonize com sua sabedoria interior através de reflexões geradas por IA.">
     <meta property="og:image" content="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&q=80&w=1000">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Reflexo - Mentor de Vida AI">
-    <meta property="twitter:description" content="Sintonize com sua sabedoria interior através de reflexões geradas por IA.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +29,9 @@
         body {
             font-family: 'Inter', sans-serif;
             background: #f8fafc;
+            /* Prevent bouncing on iOS mobile app wrappers */
+            overscroll-behavior-y: contain;
+            user-select: none;
         }
         .font-serif {
             font-family: 'Playfair Display', serif;
@@ -51,6 +57,10 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #cbd5e1;
+        }
+        /* Touch improvements for mobile apps */
+        button, a {
+            touch-action: manipulation;
         }
     </style>
 <script type="importmap">
