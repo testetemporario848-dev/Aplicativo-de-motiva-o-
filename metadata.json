@@ -1,0 +1,7 @@
+{
+  "name": "Reflexo: Mentor de Vida AI",
+  "description": "Um aplicativo de reflexão profunda e conselhos de vida personalizados usando inteligência artificial para ajudar você a navegar em qualquer situação.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
